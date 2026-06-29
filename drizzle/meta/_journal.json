@@ -8,6 +8,13 @@
       "when": 1782746152700,
       "tag": "0000_sturdy_stick",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1782748217959,
+      "tag": "0001_wild_miracleman",
+      "breakpoints": true
     }
   ]
 }
