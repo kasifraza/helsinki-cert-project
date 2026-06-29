@@ -1,3 +1,7 @@
+import { eq, sql } from "drizzle-orm";
+import { db } from "@/db";
+import { blogs } from "@/db/schema";
+
 export type Blog = {
   id: number;
   title: string;
@@ -6,50 +10,40 @@ export type Blog = {
   likes: number;
 };
 
-const blogs: Blog[] = [
-  {
-    id: 1,
-    title: "Next.js App Router Deep Dive",
-    author: "Jane Doe",
-    url: "https://example.com/nextjs-app-router",
-    likes: 12,
-  },
-  {
-    id: 2,
-    title: "React Server Components Explained",
-    author: "John Smith",
-    url: "https://example.com/rsc-explained",
-    likes: 8,
-  },
-  {
-    id: 3,
-    title: "TypeScript Best Practices for React",
-    author: "Alice Johnson",
-    url: "https://example.com/typescript-react",
-    likes: 15,
-  },
-];
+export const getBlogs = async () => {
+  return db.query.blogs.findMany();
+};
 
-let nextId = 4;
+export const getBlogsWithFilter = async (importantOnly: boolean) => {
+  if (importantOnly) {
+    return db.query.blogs.findMany({
+      where: eq(blogs.likes, 0),
+    });
+  }
+  return db.query.blogs.findMany();
+};
 
-export const getBlogs = () => blogs;
+export const getBlogById = async (id: number) => {
+  return db.query.blogs.findFirst({
+    where: eq(blogs.id, id),
+  });
+};
 
-export const getBlogById = (id: number) =>
-  blogs.find((blog) => blog.id === id);
-
-export const addBlog = (
+export const addBlog = async (
   title: string,
   author: string,
   url: string
-): Blog => {
-  const newBlog = { id: nextId++, title, author, url, likes: 0 };
-  blogs.unshift(newBlog);
-  return newBlog;
+) => {
+  const user = await db.query.users.findFirst({
+    orderBy: sql`RANDOM()`,
+  });
+  if (!user) throw new Error("No users in database. Create one first.");
+  await db.insert(blogs).values({ title, author, url, likes: 0, userId: user.id });
 };
 
-export const likeBlog = (id: number) => {
-  const blog = blogs.find((blog) => blog.id === id);
-  if (blog) {
-    blog.likes += 1;
-  }
+export const likeBlog = async (id: number) => {
+  await db
+    .update(blogs)
+    .set({ likes: sql`${blogs.likes} + 1` })
+    .where(eq(blogs.id, id));
 };

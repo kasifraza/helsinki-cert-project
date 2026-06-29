@@ -9,7 +9,7 @@ export default async function Blogs({ searchParams }: Props) {
   const { filter } = await searchParams;
   const searchTerm = filter?.trim() ?? "";
 
-  const allBlogs = getBlogs();
+  const allBlogs = await getBlogs();
 
   const filteredBlogs = searchTerm
     ? allBlogs.filter((blog) =>

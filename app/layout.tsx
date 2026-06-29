@@ -15,7 +15,7 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "Blog App - Full Stack Open",
-  description: "Full Stack Open Next.js Chapter 2 Exercises",
+  description: "Full Stack Open Next.js Chapter 3 Exercises",
 };
 
 export default function RootLayout({
@@ -45,6 +45,13 @@ export default function RootLayout({
               className="hover:text-zinc-900 transition-colors"
             >
               create new
+            </Link>
+            <span className="text-zinc-300">|</span>
+            <Link
+              href="/users"
+              className="hover:text-zinc-900 transition-colors"
+            >
+              users
             </Link>
           </div>
         </nav>
