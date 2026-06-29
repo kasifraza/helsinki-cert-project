@@ -27,6 +27,7 @@ export default async function Blogs({ searchParams }: Props) {
 
       <form action="/blogs" method="GET" className="mb-6 flex gap-2">
         <input
+          data-testid="filter-input"
           name="filter"
           type="text"
           placeholder="Search by title..."
@@ -34,6 +35,7 @@ export default async function Blogs({ searchParams }: Props) {
           className="flex-1 border border-zinc-300 rounded px-3 py-2 text-sm"
         />
         <button
+          data-testid="search-button"
           type="submit"
           className="bg-zinc-900 text-white px-4 py-2 rounded text-sm font-medium hover:bg-zinc-800 transition-colors"
         >
@@ -44,7 +46,7 @@ export default async function Blogs({ searchParams }: Props) {
       {sortedBlogs.length === 0 ? (
         <p className="text-zinc-500 text-sm">No blogs found.</p>
       ) : (
-        <ul className="space-y-4">
+        <ul data-testid="blogs-list" className="space-y-4">
           {sortedBlogs.map((blog) => (
             <li
               key={blog.id}

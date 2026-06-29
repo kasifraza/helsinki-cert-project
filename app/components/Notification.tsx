@@ -11,7 +11,7 @@ export default function Notification() {
     type === "success" ? "bg-green-600" : "bg-red-600";
 
   return (
-    <div className={`${bgColor} text-white px-6 py-3 text-sm text-center`}>
+    <div data-testid="notification" className={`${bgColor} text-white px-6 py-3 text-sm text-center`}>
       {message}
     </div>
   );

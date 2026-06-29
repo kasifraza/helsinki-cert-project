@@ -26,12 +26,12 @@ export default async function BlogPage({ params }: Props) {
     user ? await isInReadingList(user.id, blog.id) : false;
 
   return (
-    <div>
-      <h2 className="text-2xl font-semibold mb-4">{blog.title}</h2>
+    <div data-testid="blog-detail">
+      <h2 data-testid="blog-title" className="text-2xl font-semibold mb-4">{blog.title}</h2>
       <div className="space-y-2 text-sm text-zinc-600">
         <p>
           <span className="font-medium text-zinc-800">Author:</span>{" "}
-          {blog.author}
+          <span data-testid="blog-author">{blog.author}</span>
         </p>
         <p>
           <span className="font-medium text-zinc-800">URL:</span>{" "}
@@ -65,6 +65,7 @@ export default async function BlogPage({ params }: Props) {
           <form action={addToReadingListAction}>
             <input type="hidden" name="blogId" value={blog.id} />
             <button
+              data-testid="add-to-reading-list-button"
               type="submit"
               className="bg-zinc-700 text-white px-4 py-2 rounded text-sm font-medium hover:bg-zinc-600 transition-colors"
             >

@@ -1,13 +1,25 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { createBlog } from "@/app/actions/blogs";
+import { useNotification } from "@/app/components/NotificationContext";
 
 export default function NewBlog() {
+  const router = useRouter();
+  const { showNotification } = useNotification();
   const [state, formAction] = useActionState(createBlog, {
     error: "",
+    success: false,
     values: { title: "", author: "", url: "" },
   });
+
+  useEffect(() => {
+    if (state?.success) {
+      showNotification("Blog created successfully", "success");
+      router.push("/blogs");
+    }
+  }, [state, showNotification, router]);
 
   return (
     <div className="max-w-md mx-auto">
@@ -19,10 +31,11 @@ export default function NewBlog() {
       )}
       <form action={formAction} className="space-y-4">
         <div>
-          <label className="block text-sm font-medium text-zinc-700 mb-1">
+          <label htmlFor="title" className="block text-sm font-medium text-zinc-700 mb-1">
             Title
           </label>
           <input
+            id="title"
             name="title"
             type="text"
             required
@@ -31,10 +44,11 @@ export default function NewBlog() {
           />
         </div>
         <div>
-          <label className="block text-sm font-medium text-zinc-700 mb-1">
+          <label htmlFor="author" className="block text-sm font-medium text-zinc-700 mb-1">
             Author
           </label>
           <input
+            id="author"
             name="author"
             type="text"
             required
@@ -43,10 +57,11 @@ export default function NewBlog() {
           />
         </div>
         <div>
-          <label className="block text-sm font-medium text-zinc-700 mb-1">
+          <label htmlFor="url" className="block text-sm font-medium text-zinc-700 mb-1">
             URL
           </label>
           <input
+            id="url"
             name="url"
             type="url"
             required
@@ -55,6 +70,7 @@ export default function NewBlog() {
           />
         </div>
         <button
+          data-testid="create-blog-button"
           type="submit"
           className="bg-zinc-900 text-white px-4 py-2 rounded text-sm font-medium hover:bg-zinc-800 transition-colors"
         >
