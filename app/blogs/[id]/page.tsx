@@ -1,6 +1,12 @@
 import { notFound } from "next/navigation";
+import { auth } from "@/auth";
 import { getBlogById } from "@/app/services/blogs";
-import { likeBlogAction } from "@/app/actions/blogs";
+import { getCurrentUser } from "@/app/services/session";
+import { isInReadingList } from "@/app/services/readinglist";
+import {
+  likeBlogAction,
+  addToReadingListAction,
+} from "@/app/actions/blogs";
 
 type Props = {
   params: Promise<{ id: string }>;
@@ -13,6 +19,11 @@ export default async function BlogPage({ params }: Props) {
   if (!blog) {
     notFound();
   }
+
+  const session = await auth();
+  const user = session ? await getCurrentUser() : null;
+  const inList =
+    user ? await isInReadingList(user.id, blog.id) : false;
 
   return (
     <div>
@@ -39,15 +50,35 @@ export default async function BlogPage({ params }: Props) {
         </p>
       </div>
 
-      <form action={likeBlogAction} className="mt-6">
-        <input type="hidden" name="id" value={blog.id} />
-        <button
-          type="submit"
-          className="bg-blue-600 text-white px-4 py-2 rounded text-sm font-medium hover:bg-blue-700 transition-colors"
-        >
-          Like
-        </button>
-      </form>
+      <div className="mt-6 flex gap-3">
+        <form action={likeBlogAction}>
+          <input type="hidden" name="id" value={blog.id} />
+          <button
+            type="submit"
+            className="bg-blue-600 text-white px-4 py-2 rounded text-sm font-medium hover:bg-blue-700 transition-colors"
+          >
+            Like
+          </button>
+        </form>
+
+        {user && user.id !== blog.userId && !inList && (
+          <form action={addToReadingListAction}>
+            <input type="hidden" name="blogId" value={blog.id} />
+            <button
+              type="submit"
+              className="bg-zinc-700 text-white px-4 py-2 rounded text-sm font-medium hover:bg-zinc-600 transition-colors"
+            >
+              Add to reading list
+            </button>
+          </form>
+        )}
+
+        {inList && (
+          <span className="text-sm text-zinc-500 self-center">
+            In your reading list
+          </span>
+        )}
+      </div>
     </div>
   );
 }

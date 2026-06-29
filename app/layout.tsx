@@ -1,6 +1,9 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
-import Link from "next/link";
+import AuthSessionProvider from "@/app/components/SessionProvider";
+import { NotificationProvider } from "@/app/components/NotificationContext";
+import Notification from "@/app/components/Notification";
+import NavBar from "@/app/components/NavBar";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -15,7 +18,7 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "Blog App - Full Stack Open",
-  description: "Full Stack Open Next.js Chapter 3 Exercises",
+  description: "Full Stack Open Next.js Chapter 4",
 };
 
 export default function RootLayout({
@@ -26,38 +29,16 @@ export default function RootLayout({
       lang="en"
       className={`${geistSans.variable} ${geistMono.variable} antialiased`}
     >
-      <body className="min-h-screen flex flex-col font-sans">
-        <nav className="border-b border-zinc-200 px-6 py-4">
-          <div className="max-w-3xl mx-auto flex gap-4 text-sm font-medium text-zinc-600">
-            <Link href="/" className="hover:text-zinc-900 transition-colors">
-              home
-            </Link>
-            <span className="text-zinc-300">|</span>
-            <Link
-              href="/blogs"
-              className="hover:text-zinc-900 transition-colors"
-            >
-              blogs
-            </Link>
-            <span className="text-zinc-300">|</span>
-            <Link
-              href="/blogs/new"
-              className="hover:text-zinc-900 transition-colors"
-            >
-              create new
-            </Link>
-            <span className="text-zinc-300">|</span>
-            <Link
-              href="/users"
-              className="hover:text-zinc-900 transition-colors"
-            >
-              users
-            </Link>
-          </div>
-        </nav>
-        <main className="flex-1 max-w-3xl mx-auto w-full px-6 py-8">
-          {children}
-        </main>
+      <body className="min-h-screen flex flex-col bg-zinc-50 text-zinc-900">
+        <AuthSessionProvider>
+          <NotificationProvider>
+            <NavBar />
+            <Notification />
+            <main className="flex-1 max-w-3xl mx-auto w-full px-6 py-8">
+              {children}
+            </main>
+          </NotificationProvider>
+        </AuthSessionProvider>
       </body>
     </html>
   );

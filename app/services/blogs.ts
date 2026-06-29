@@ -14,15 +14,6 @@ export const getBlogs = async () => {
   return db.query.blogs.findMany();
 };
 
-export const getBlogsWithFilter = async (importantOnly: boolean) => {
-  if (importantOnly) {
-    return db.query.blogs.findMany({
-      where: eq(blogs.likes, 0),
-    });
-  }
-  return db.query.blogs.findMany();
-};
-
 export const getBlogById = async (id: number) => {
   return db.query.blogs.findFirst({
     where: eq(blogs.id, id),
@@ -32,13 +23,10 @@ export const getBlogById = async (id: number) => {
 export const addBlog = async (
   title: string,
   author: string,
-  url: string
+  url: string,
+  userId: number
 ) => {
-  const user = await db.query.users.findFirst({
-    orderBy: sql`RANDOM()`,
-  });
-  if (!user) throw new Error("No users in database. Create one first.");
-  await db.insert(blogs).values({ title, author, url, likes: 0, userId: user.id });
+  await db.insert(blogs).values({ title, author, url, likes: 0, userId });
 };
 
 export const likeBlog = async (id: number) => {
