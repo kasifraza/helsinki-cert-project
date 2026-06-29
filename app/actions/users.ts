@@ -6,7 +6,6 @@ import { eq } from "drizzle-orm";
 import { db } from "@/db";
 import { users } from "@/db/schema";
 import { auth } from "@/auth";
-import { getCurrentUser } from "@/app/services/session";
 
 export const registerUser = async (
   prevState: { error: string; values: { username: string; name: string } },
@@ -43,10 +42,12 @@ export const registerUser = async (
   redirect("/login");
 };
 
-export const generateTokenAction = async () => {
-  const user = await getCurrentUser();
-  if (!user) return;
+export const generateTokenAction = async (): Promise<{ token: string | null }> => {
+  const session = await auth();
+  if (!session?.user?.email) return { token: null };
 
   const token = crypto.randomUUID();
-  await db.update(users).set({ token }).where(eq(users.id, user.id));
+  await db.update(users).set({ token }).where(eq(users.username, session.user.email));
+
+  return { token };
 };

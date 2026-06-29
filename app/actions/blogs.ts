@@ -1,10 +1,9 @@
 "use server";
 
-import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { addBlog, likeBlog } from "@/app/services/blogs";
-import { getCurrentUser } from "@/app/services/session";
 import { db } from "@/db";
 import { readingList } from "@/db/schema";
 import { eq, and } from "drizzle-orm";
@@ -12,10 +11,10 @@ import { eq, and } from "drizzle-orm";
 export const createBlog = async (
   prevState: { error: string; values: { title: string; author: string; url: string } },
   formData: FormData
-) => {
+): Promise<{ error: string; success: boolean; values: { title: string; author: string; url: string } }> => {
   const session = await auth();
   if (!session) {
-    redirect("/login");
+    return { error: "Not authenticated", success: false, values: { title: "", author: "", url: "" } };
   }
 
   const title = (formData.get("title") as string)?.trim();
@@ -23,24 +22,24 @@ export const createBlog = async (
   const url = (formData.get("url") as string)?.trim();
 
   if (!title || title.length < 5) {
-    return { error: "Title must be at least 5 characters", values: { title, author, url } };
+    return { error: "Title must be at least 5 characters", success: false, values: { title, author, url } };
   }
   if (!author || author.length < 5) {
-    return { error: "Author must be at least 5 characters", values: { title, author, url } };
+    return { error: "Author must be at least 5 characters", success: false, values: { title, author, url } };
   }
   if (!url || url.length < 5) {
-    return { error: "URL must be at least 5 characters", values: { title, author, url } };
+    return { error: "URL must be at least 5 characters", success: false, values: { title, author, url } };
   }
 
-  const user = await getCurrentUser();
-  if (!user) {
-    return { error: "User not found", values: { title, author, url } };
+  const userId = Number(session.user?.id);
+  if (!userId) {
+    return { error: "User not found", success: false, values: { title, author, url } };
   }
 
-  await addBlog(title, author, url, user.id);
+  await addBlog(title, author, url, userId);
 
   revalidatePath("/blogs");
-  redirect("/blogs");
+  return { error: "", success: true, values: { title: "", author: "", url: "" } };
 };
 
 export const likeBlogAction = async (formData: FormData) => {
@@ -54,24 +53,22 @@ export const likeBlogAction = async (formData: FormData) => {
 
 export const addToReadingListAction = async (formData: FormData) => {
   const session = await auth();
-  if (!session) {
+  if (!session?.user?.id) {
     redirect("/login");
   }
 
-  const user = await getCurrentUser();
-  if (!user) return;
-
+  const userId = Number(session.user.id);
   const blogId = Number(formData.get("blogId"));
 
   const existing = await db.query.readingList.findFirst({
     where: and(
-      eq(readingList.userId, user.id),
+      eq(readingList.userId, userId),
       eq(readingList.blogId, blogId)
     ),
   });
 
   if (!existing) {
-    await db.insert(readingList).values({ userId: user.id, blogId, read: false });
+    await db.insert(readingList).values({ userId, blogId, read: false });
   }
 
   revalidatePath(`/blogs/${blogId}`);
@@ -80,18 +77,16 @@ export const addToReadingListAction = async (formData: FormData) => {
 
 export const markAsReadAction = async (formData: FormData) => {
   const session = await auth();
-  if (!session) return;
+  if (!session?.user?.id) return;
 
-  const user = await getCurrentUser();
-  if (!user) return;
-
+  const userId = Number(session.user.id);
   const entryId = Number(formData.get("entryId"));
 
   await db
     .update(readingList)
     .set({ read: true })
     .where(
-      and(eq(readingList.id, entryId), eq(readingList.userId, user.id))
+      and(eq(readingList.id, entryId), eq(readingList.userId, userId))
     );
 
   revalidatePath("/me");
